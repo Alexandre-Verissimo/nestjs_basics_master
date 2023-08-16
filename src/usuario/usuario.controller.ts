@@ -1,11 +1,11 @@
-import { UsuarioParamsDto, UsuarioDto, UsuarioSchema } from './dto/usuario.dto';
+//import { JoiValidationPipe } from '../pipes/joi-validation';
+import { HttpExceptionFilter } from './../filter/http-exception.filtert';
+import { UsuarioParamsDto, UsuarioDto } from './dto/usuario.dto';
 import { UsuarioInterface } from './interface/usuario.interface';
 import { UsuarioService } from './usuario.service';
-import { BadRequestException, Body, Controller, Delete, Get, Header, HttpStatus, Param, ParseIntPipe, Post, Query, Redirect, Req, Res, UseFilters, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
-import { Request, Response } from 'express';
-import { HttpExceptionFilter } from './filter';
-import { AuthGuard } from './guards';
-import { JoiValidationPipe } from './pipes';
+import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Query, Req, UseFilters, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
+//import { ValidationPipe }  from 'src/pipes/class-validator' Esse ValidationPipe é o class-validator dentro da pasta pipes (um custom)
+import { AuthGuard } from 'src/guard';
 
 @Controller('usuario')
 @UseGuards(AuthGuard)
@@ -13,36 +13,28 @@ export class UsuarioController {
 constructor(private readonly usuarioServie: UsuarioService) {}
 
   @Get('listar')
-  getUsuarios(
-    @Param('id', ParseIntPipe) id: number,
-    @Query('sort') sort: boolean,
-    @Body() data: UsuarioDto,
-    @Req() req: Request
-  ): UsuarioInterface [] {
+  getUsuarios(): UsuarioInterface [] {
     return this.usuarioServie.getUsuarios()
   }
   
 
   @Get('/:email')
-  // @Redirect('')
-  // @Header('Cache-Control', 'none')
-  // como existe o filtro global no main, não é necessário usar o @UseFilters
-  // @UseFilters(new HttpExceptionFilter())
-  @UseGuards(new AuthGuard())
+  @UseFilters(new HttpExceptionFilter())
+  @UseGuards(new AuthGuard)
   async getUsuario(@Param() param: UsuarioParamsDto): Promise<UsuarioInterface> {
-    // @Req() req: Request, @Res() res: Response
     try {
         return await this.usuarioServie.getUsuario(param.email)
-
+ 
     } catch (error) {
-        throw new BadRequestException('Test')
+        throw new NotFoundException('Usuário não encontrado')
     }
   }
 
   //ValidationPipe
 
   @Post('add')
-  @UsePipes(new JoiValidationPipe(UsuarioSchema))
+  @UseFilters(new HttpExceptionFilter())
+  @UsePipes(new ValidationPipe())
   addUsuario(@Body() usuario: UsuarioDto): UsuarioInterface {
     return this.usuarioServie.addUsuario(usuario)
   } 

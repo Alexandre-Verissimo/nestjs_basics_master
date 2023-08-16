@@ -10,16 +10,13 @@ public usuarios: UsuarioInterface [] = []
   }
 
  async getUsuario(email: string): Promise<UsuarioInterface> {
-    const emailConvert = email['email']
+    const emailConvert = email
     const userData = this.usuarios.find(usuario => usuario.email === emailConvert)
-    console.log(userData)
-
     if(userData) {
       return Promise.resolve(userData)
     }
 
-    throw new NotFoundException('usuário não encontrado')
-
+    throw new Error()
     
   }
 
