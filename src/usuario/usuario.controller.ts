@@ -1,12 +1,15 @@
 //import { JoiValidationPipe } from '../pipes/joi-validation';
-import { HttpExceptionFilter } from './../filter/http-exception.filtert';
 import { UsuarioParamsDto, UsuarioDto } from './dto/usuario.dto';
 import { UsuarioInterface } from './interface/usuario.interface';
 import { UsuarioService } from './usuario.service';
-import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Query, Req, UseFilters, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Query, Req, UseFilters, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from "@nestjs/common";
+import { LoggingInterceptor } from 'src/core/interceptor';
+import { HttpExceptionFilter } from 'src/core/filter/http-exception.filtert';
+import { AuthGuard } from 'src/core/guard';
 //import { ValidationPipe }  from 'src/pipes/class-validator' Esse ValidationPipe é o class-validator dentro da pasta pipes (um custom)
-import { AuthGuard } from 'src/guard';
 
+
+@UseInterceptors(LoggingInterceptor)
 @Controller('usuario')
 @UseGuards(AuthGuard)
 export class UsuarioController {
@@ -19,6 +22,7 @@ constructor(private readonly usuarioServie: UsuarioService) {}
   
 
   @Get('/:email')
+  @UseInterceptors(new LoggingInterceptor)
   @UseFilters(new HttpExceptionFilter())
   @UseGuards(new AuthGuard)
   async getUsuario(@Param() param: UsuarioParamsDto): Promise<UsuarioInterface> {
